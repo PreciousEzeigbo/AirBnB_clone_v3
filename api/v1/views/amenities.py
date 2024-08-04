@@ -3,7 +3,8 @@
 route for handling Amenity objects and operations
 """
 from flask import jsonify, abort, request
-from api.v1.views import app_views, storage
+from api.v1.views import app_views
+from models import storage
 from models.amenity import Amenity
 
 
@@ -35,9 +36,8 @@ def amenity_create():
 
     new_am = Amenity(**am_json)
     new_am.save()
-    resp = jsonify(new_am.to_json())
+    resp = jsonify(new_am.to_dict())
     resp.status_code = 201
-
     return resp
 
 @app_views.route("/amenities/<amenity_id>",  methods=["GET"],
@@ -48,13 +48,10 @@ def amenity_by_id(amenity_id):
     :param amenity_id: amenity object id
     :return: state obj with the specified id or error
     """
-
     fetched_obj = storage.get("Amenity", str(amenity_id))
-
     if fetched_obj is None:
         abort(404)
-
-    return jsonify(fetched_obj.to_json())
+    return jsonify(fetched_obj.to_dict())
 
 @app_views.route("/amenities/<amenity_id>",  methods=["PUT"],
         strict_slashes=False)
@@ -74,7 +71,7 @@ def amenity_put(amenity_id):
         if key not in ["id", "created_at", "updated_at"]:
             setattr(fetched_obj, key, val)
     fetched_obj.save()
-    return jsonify(fetched_obj.to_json())
+    return jsonify(fetched_obj.to_dict())
 
 
 @app_views.route("/amenities/<amenity_id>",  methods=["DELETE"],
@@ -85,13 +82,9 @@ def amenity_delete_by_id(amenity_id):
     :param amenity_id: Amenity object id
     :return: empty dict with 200 or 404 if not found
     """
-
     fetched_obj = storage.get("Amenity", str(amenity_id))
-
     if fetched_obj is None:
         abort(404)
-
     storage.delete(fetched_obj)
     storage.save()
-
     return jsonify({})
