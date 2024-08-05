@@ -19,8 +19,9 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 classes = {"Amenity": Amenity, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
 
+
 class DBStorage:
-    """interacts with the MySQL database"""
+    """interaacts with the MySQL database"""
     __engine = None
     __session = None
 
@@ -48,7 +49,7 @@ class DBStorage:
                 for obj in objs:
                     key = obj.__class__.__name__ + '.' + obj.id
                     new_dict[key] = obj
-        return new_dict
+        return (new_dict)
 
     def new(self, obj):
         """add the object to the current database session"""
@@ -68,20 +69,26 @@ class DBStorage:
         Base.metadata.create_all(self.__engine)
         sess_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(sess_factory)
-        self.__session = Session()
+        self.__session = Session
 
     def close(self):
-        """Closes the current session"""
-        if self.__session is not None:
-           self.__session.close()
-           self.__session = None
+        """call remove() method on the private session attribute"""
+        self.__session.remove()
 
     def get(self, cls, id):
-        """retrieves an object of a class with id"""
-        obj = None
-        if cls is not None and issubclass(cls, BaseModel):
-            obj = self.__session.query(cls).filter(cls.id == id).first()
-        return obj
+        """
+        Returns the object based on the class name and its ID, or
+        None if not found
+        """
+        if cls not in classes.values():
+            return None
+
+        all_cls = models.storage.all(cls)
+        for value in all_cls.values():
+            if (value.id == id):
+                return value
+
+        return None
 
     def count(self, cls=None):
         """
