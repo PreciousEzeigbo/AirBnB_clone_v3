@@ -16,7 +16,6 @@ app_port = int(os.getenv('HBNB_API_PORT', '5000'))
 app.url_map.strict_slashes = False
 app.register_blueprint(app_views)
 CORS(app, resources={'/*': {'origins': app_host}})
-storage = DBStorage()
 storage.reload()
 
 
